@@ -94,7 +94,7 @@ fit <- bscm$sample(
   seed = 321205,
   chains = 4,
   parallel_chains = 4,
-  iter_warmup = 2000,
+  iter_warmup = 3000,
   iter_sampling = 1000,
   refresh = 100,
   adapt_delta = 0.999,
@@ -134,7 +134,7 @@ plt <- ggplot(qs) + geom_ribbon(mapping = aes(x = years,
   geom_text(mapping = aes(x = 1996.5, y = 40000, label = "Synthetic\nTexas"), size = 6) +
   labs(title = "Testing bayesian synthetic control",
        x = "Year",
-       y = "Difference") +
+       y = "Black male prison population") +
   theme_minimal() + 
   theme(plot.title = element_text(size = 18),
         plot.background = element_rect(fill = "white"))
