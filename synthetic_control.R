@@ -1,4 +1,5 @@
 library(tidyverse)
+library()
 library(cmdstanr)
 library(brms)
 library(posterior)
@@ -116,7 +117,7 @@ qs <- data.frame(qs)
 qs$true <- y_test$statefips_48 * adj_factor
 qs$years <- 1994:2000
 
-ggplot(qs) + geom_ribbon(mapping = aes(x = years,
+plt <- ggplot(qs) + geom_ribbon(mapping = aes(x = years,
                                            ymin = X2.5.,
                                            ymax = X97.5.),
                              fill = "blue", 
@@ -129,7 +130,13 @@ ggplot(qs) + geom_ribbon(mapping = aes(x = years,
                           y = true),
             linetype = 2,
             size = 2) +
+  geom_text(mapping = aes(x = 1996, y = 60000, label = "Texas"), size = 6) + 
+  geom_text(mapping = aes(x = 1996.5, y = 40000, label = "Synthetic\nTexas"), size = 6) +
   labs(title = "Testing bayesian synthetic control",
        x = "Year",
        y = "Difference") +
-  theme_minimal()
+  theme_minimal() + 
+  theme(plot.title = element_text(size = 18))
+ggsave(filename = "Synthetic_Texas_1.png", plot = plt,
+       height = 1500, width = 2000, units = "px")
+plt

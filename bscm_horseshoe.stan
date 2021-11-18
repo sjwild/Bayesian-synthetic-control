@@ -30,8 +30,8 @@ model{
 //Pre-treatment estimation
 beta_raw ~ normal(0, 1); //=> beta ~ normal(0, lambda^2)
 tau ~ cauchy(0, sigma);
-sigma ~ cauchy(0,10);
-beta_0 ~ cauchy(0,10);
+sigma ~ cauchy(0, 10);
+beta_0 ~ cauchy(0, 10);
 y_train ~ normal(X_beta, sigma);
 }
 generated quantities{
