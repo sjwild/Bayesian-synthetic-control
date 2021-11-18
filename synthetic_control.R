@@ -136,7 +136,8 @@ plt <- ggplot(qs) + geom_ribbon(mapping = aes(x = years,
        x = "Year",
        y = "Difference") +
   theme_minimal() + 
-  theme(plot.title = element_text(size = 18))
+  theme(plot.title = element_text(size = 18),
+        plot.background = element_rect(fill = "white"))
 ggsave(filename = "Synthetic_Texas_1.png", plot = plt,
        height = 1500, width = 2000, units = "px")
 plt
