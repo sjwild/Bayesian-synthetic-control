@@ -4,4 +4,6 @@ A second Stan script uses the code of [Piironen and Vehtari (2017)](https://proj
 
 At this point I have not changed the code of either Cunningham or Lee, Kim, and Gupta, though I have modified the code of Piironen and Vehtari. You can find a modified version of their code in bscm_horseshoe_modified.stan. 
 
+A third approach is included in `sc_spike_slab.Rmd`, which is a spike and slab formulation for synthetic controls.
+
 This is a work in progress, and contributions are welcome. In particular, I am looking for convenient ways of using auxillary variables to help select the weights.
