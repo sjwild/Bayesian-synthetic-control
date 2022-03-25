@@ -83,7 +83,9 @@ generated quantities{
   vector[N_pre] y_fit;                        //Fitted synthetic control unit in the pre-treatment
   vector[N_post] y_post;                      //Predicted synthetic control unit in the post-treatment
   vector[N_pre] log_lik;                      //Log-likelihood
-  y_fit = alpha + X_pre * beta;
+  for(f in 1:N_pre){
+    y_fit[f] = normal_rng(alpha + X_pre[f,] * beta, sigma);
+  }
 
   for(i in 1:N_post){
     y_post[i] = normal_rng(alpha + X_post[i,] * beta, sigma);

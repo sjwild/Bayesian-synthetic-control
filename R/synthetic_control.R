@@ -1,5 +1,5 @@
 library(tidyverse)
-library()
+library(data.table)
 library(cmdstanr)
 library(brms)
 library(posterior)
@@ -196,7 +196,7 @@ fit2$save_object(file = "fit2_no_predictors.RDS")
 
 
 y_test_draws2 <- as_draws_df(fit2$draws(c("y_fit", "y_post")))
-y_test_draws2 <- y_difference_draws <- data.frame(y_test_draws[, 1:16])
+y_test_draws2 <- y_difference_draws <- data.frame(y_test_draws2[, 1:16])
 
 
 y_all <- rbind(y_train, y_test)
@@ -285,7 +285,8 @@ fit3 <-  brm(df_brms,
              control = list(adapt_delta = 0.99,
                             max_treedepth = 15))
 
-y_post_brms <- posterior_epred(fit3, newdata = rbind(X_train, X_test))
+y_post_brms <- predict(fit3, newdata = rbind(X_train, X_test),
+                       summary = FALSE)
 pp_check()
 
 
@@ -321,6 +322,87 @@ plt_brms
 ggsave(filename = "Synthetic_Texas_brms.png", plot = plt_brms,
        height = 1500, width = 2000, units = "px")
 
+
+
+
+# Pinkney 2021
+control_fips <- c(1,2,4:6,8:13,15:42,44:47, 49:51,53:56)
+texas_fip <- 48
+Y_donor <- texas[texas$statefip %in% control_fips, c("statefip", "bmprison", "year")] %>%
+  pivot_wider(names_from= statefip, values_from = bmprison,
+              names_prefix = "statefips_")
+X_donor <- texas %>%
+  group_by(statefip) %>%
+  summarize(black = mean(black, na.rm = TRUE),
+            alcohol = mean(alcohol, na.rm = TRUE),
+            perc1519 = mean(perc1519, na.rm = TRUE),
+            aidscapita = mean(aidscapita, na.rm = TRUE))
+Y_target <- texas[texas$statefip == texas_fip, c("statefip", "bmprison", "year")] %>%
+  pivot_wider(names_from= statefip, values_from = bmprison,
+              names_prefix = "statefips_")
+
+X_target <- X_donor[X_donor$statefip == texas_fip, 2:5]
+X_donor <- X_donor[X_donor$statefip != texas_fip, 2:5]
+X_all <- rbind(X_target, X_donor)
+
+
+Y_all <- cbind(Y_target[,2], Y_donor[, 2:51]) + 1
+X_all <- t(as.matrix(X_all))
+
+
+bscm_data3 <- list(
+  
+  T = nrow(Y_all),
+  J = ncol(Y_all),
+  L = 5,
+  P = nrow(X_all),
+  X = X_all,
+  Y = as.data.frame(transpose(Y_all / 100)),
+  trt_times = 7
+  
+)
+
+bscm4 <- cmdstan_model("bscm_improved_extended_pinkney.stan")
+#bscm3 <- cmdstan_model("bscm_factor_modified.stan")
+
+T1 = nrow(Y_all)
+J = ncol(Y_all)
+L = 10
+P = nrow(X_all)
+X = X_all
+Y = as.matrix(transpose(Y_all / 1000))
+trt_times = 7
+M = L * (T1 - L) + L * (L - 1) / 2
+
+init_vals <- function() list(chi = runif(P),
+                             delta = runif(T1),
+                             kappa = runif(J),
+                             beta_off = as.matrix(runif(J * L), 
+                                                  nrow = J, 
+                                                  ncol = L),
+                             lambda = runif(L),
+                             eta = runif(1),
+                             tau = runif(J),
+                             y_post_target = runif(trt_times),
+                             sigma = runif(1),
+                             F_diag = runif(L),
+                             F_lower = runif(M)
+)
+
+                 
+fit3 <- bscm4$sample(
+  data = bscm_data3,
+  seed = 321205,
+  chains = 4,
+  parallel_chains = 4,
+  iter_warmup = 500,
+  iter_sampling = 500,
+  refresh = 100,
+  adapt_delta = 0.95,
+  max_treedepth = 15,
+  init = init_vals
+  
+)
 
 
 
